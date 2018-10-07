@@ -1,12 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>DroSleep</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DroSleep.Core\DroSleep.Core.csproj" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-  </PropertyGroup>
+  <ItemGroup>
+    <None Update="DropSleep.ini" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="nlog" Version="4.5.9" />
+  </ItemGroup>
 </Project>
