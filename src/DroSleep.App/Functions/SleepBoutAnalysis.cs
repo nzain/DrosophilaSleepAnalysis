@@ -77,7 +77,7 @@ namespace DroSleep.App.Functions
             GenericInterval[] intervals = GenericInterval.EnumerateIntervals(data, intervalLength).ToArray();
 
             
-            // 1. compute all cycles
+            // // 1. compute all cycles
             DroSleepCycle[][] cycles = new DroSleepCycle[cols][];
             for (int col = 0; col < cols; col++)
             {
@@ -95,10 +95,22 @@ namespace DroSleep.App.Functions
         {
             yield return interval.StartId.ToString();
             yield return interval.EndId.ToString();
-            Func<DroSleepCycle, double> selector = s => s.SleepDuration.TotalMinutes;
+
+            Func<DroSleepCycle, double> selector = s => 
+            {
+                // Charlotte: don't count partial intervals, if cross-border sleep less than threshold
+                double partialSleep = s.SleepDurationPartial(interval).TotalMinutes;
+                return partialSleep >= Program.Config.SleepIndicatorDurationMin
+                    ? partialSleep 
+                    : 0;
+            };
+
             for (int col = 0; col < cycles.Length; col++)
             {
-                DroSleepCycle[] items = cycles[col].Where(w => interval.Contains(w.CycleStart)).ToArray();
+                DroSleepCycle[] items = cycles[col]
+                    .Where(w => interval.IntersectsSleep(w))
+                    .Where(w => selector(w) > 0)
+                    .ToArray();
                 switch (this.Mode)
                 {
                     case AnalysisMode.SleepBoutCount:

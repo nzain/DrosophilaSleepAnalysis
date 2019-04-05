@@ -29,7 +29,7 @@ namespace DroSleep.Core
                     MonitorRow row = new MonitorRow(line); // might throw
                     if (interval == null)
                     {
-                        interval = new LightInterval(row.IsLightOn, index, row.Id, -1, -1L);
+                        interval = new LightInterval(row.IsLightOn, index, row.Id, row.TimeStamp, -1, -1L, default(DateTimeOffset));
                     }
                     else if (interval.IsLightOn != row.IsLightOn)
                     {
@@ -37,10 +37,10 @@ namespace DroSleep.Core
                         int prevIndex = this.Data.Count - 1;
                         MonitorRow prevRow = this.Data[prevIndex];
                         this.LightIntervals.Add(new LightInterval(interval.IsLightOn, 
-                            interval.StartIndex, interval.StartId,
-                            prevIndex, prevRow.Id));
+                            interval.StartIndex, interval.StartId, interval.StartTime,
+                            prevIndex, prevRow.Id, prevRow.TimeStamp));
                         // and start next
-                        interval = new LightInterval(row.IsLightOn, index, row.Id, -1, -1L);
+                        interval = new LightInterval(row.IsLightOn, index, row.Id, row.TimeStamp, -1, -1L, default(DateTimeOffset));
                     }
                     this.Data.Add(row);
                     index++;
@@ -52,8 +52,8 @@ namespace DroSleep.Core
                     int endIndex = this.Data.Count - 1;
                     MonitorRow endRow = this.Data[endIndex];
                     this.LightIntervals.Add(new LightInterval(interval.IsLightOn, 
-                        interval.StartIndex, interval.StartId,
-                        endIndex, endRow.Id));
+                        interval.StartIndex, interval.StartId, interval.StartTime,
+                        endIndex, endRow.Id, endRow.TimeStamp));
                 }
             }
         }

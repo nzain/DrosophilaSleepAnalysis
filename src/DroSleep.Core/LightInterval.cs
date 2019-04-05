@@ -7,8 +7,8 @@ namespace DroSleep.Core
 {
     public class LightInterval : GenericInterval
     {
-        public LightInterval(bool isLightOn, int startIndex, long startId, int endIndex, long endId)
-            : base(startIndex, startId, endIndex, endId)
+        public LightInterval(bool isLightOn, int startIndex, long startId, DateTimeOffset startTime, int endIndex, long endId, DateTimeOffset endTime)
+            : base(startIndex, startId, startTime, endIndex, endId, endTime)
         {
             this.IsLightOn = isLightOn;
         }

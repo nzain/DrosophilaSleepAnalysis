@@ -12,20 +12,23 @@ namespace DroSleep.Core
             MonitorRow cycleStart = null;
             int beamCrossingsBeforeSleep = 0;
             MonitorRow sleepStart = null;
-            MonitorRow cycleEnd = null;
+            MonitorRow lightSwitch = null;
             foreach (MonitorRow row in rows)
             {
                 int activity = row.BeamCrossings[index];
+                if (lightSwitch == null && sleepStart != null && sleepStart.IsLightOn != row.IsLightOn)
+                {
+                    lightSwitch = row;
+                }
                 // 1) check for completion
                 if (sleepStart != null && row.TimeStamp - sleepStart.TimeStamp >= inactivityThreshold && activity > 0)
                 {
                     // end of interval!
-                    yield return new DroSleepCycle(cycleStart, beamCrossingsBeforeSleep, sleepStart, cycleEnd);
+                    yield return new DroSleepCycle(cycleStart, beamCrossingsBeforeSleep, sleepStart, row, lightSwitch);
                     // start next interval
                     cycleStart = null;
                     beamCrossingsBeforeSleep = 0;
                     sleepStart = null;
-                    cycleEnd = null;
                 }
                 else if (sleepStart != null && activity > 0)
                 {
@@ -42,16 +45,16 @@ namespace DroSleep.Core
                 {
                     sleepStart = row;
                 }
-                cycleEnd = row;
             } // end-for
         }
 
-        public DroSleepCycle(MonitorRow cycleStart, int beamCrossingsBeforeSleep, MonitorRow sleepStart, MonitorRow cycleEnd)
+        public DroSleepCycle(MonitorRow cycleStart, int beamCrossingsBeforeSleep, MonitorRow sleepStart, MonitorRow cycleEnd, MonitorRow lightSwitch)
         {
             this.CycleStart = cycleStart ?? throw new ArgumentNullException(nameof(cycleStart));
             this.BeamCrossingsBeforeSleep = beamCrossingsBeforeSleep;
             this.SleepStart = sleepStart ?? throw new ArgumentNullException(nameof(sleepStart));
             this.CycleEnd = cycleEnd ?? throw new ArgumentNullException(nameof(cycleEnd));
+            this.LightSwitch = lightSwitch; // can be null typically
         }
 
         public MonitorRow CycleStart { get; }
@@ -61,8 +64,21 @@ namespace DroSleep.Core
         public MonitorRow SleepStart { get; }
 
         public MonitorRow CycleEnd { get; }
+        
+        public MonitorRow LightSwitch { get; }
 
         public TimeSpan SleepDuration => this.CycleEnd.TimeStamp - this.SleepStart.TimeStamp;
+
+        public TimeSpan SleepDurationPartial(GenericInterval interval)
+        {
+            DateTimeOffset start = this.SleepStart.TimeStamp > interval.StartTime
+                ? this.SleepStart.TimeStamp
+                : interval.StartTime;
+            DateTimeOffset end = this.CycleEnd.TimeStamp < interval.EndTime
+                ? this.CycleEnd.TimeStamp
+                : interval.EndTime;
+            return end - start;
+        }
 
         public override string ToString() 
         {
