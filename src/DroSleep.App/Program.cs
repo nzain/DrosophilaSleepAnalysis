@@ -54,7 +54,7 @@ namespace DroSleep.App
             }
             
 
-            if (args.Length == 0)
+            if (args.Length == 0 && File.Exists(@"..\..\samples\Monitor10.txt"))
             {
                 args = new string[]{ @"..\..\samples\Monitor10.txt" };
             }
