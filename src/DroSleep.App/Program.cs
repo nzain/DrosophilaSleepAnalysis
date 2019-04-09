@@ -38,6 +38,19 @@ namespace DroSleep.App
 
         static void Main(string[] args)
         {
+#if Debug
+            if (args.Length == 0 && File.Exists(@"..\..\samples\Monitor10.txt"))
+            {
+                args = new string[]{ @"..\..\samples\Monitor10.txt" };
+            }
+#endif
+            if (args.Length == 0)
+            {
+                Console.Error.WriteLine("Usage: drag & drop a file onto this exe");
+                Console.ReadLine();
+                return;
+            }
+
             // Read DroSleep.ini file
             if (DroSleepConfiguration.TryLoad(ConfigFile, out DroSleepConfiguration cfg))
             {
@@ -50,13 +63,8 @@ namespace DroSleep.App
             }
             else
             {
+                Console.ReadLine();
                 return;
-            }
-            
-
-            if (args.Length == 0 && File.Exists(@"..\..\samples\Monitor10.txt"))
-            {
-                args = new string[]{ @"..\..\samples\Monitor10.txt" };
             }
 
             foreach (string filename in args)
@@ -69,6 +77,8 @@ namespace DroSleep.App
                 }
                 Analyze(fi);
             }
+            Console.WriteLine("press 'enter' to exit");
+            Console.ReadLine();
         }
 
         private static void Analyze(FileInfo file)
