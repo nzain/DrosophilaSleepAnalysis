@@ -38,7 +38,7 @@ namespace DroSleep.App
 
         static void Main(string[] args)
         {
-#if Debug
+#if DEBUG
             if (args.Length == 0 && File.Exists(@"..\..\samples\Monitor10.txt"))
             {
                 args = new string[]{ @"..\..\samples\Monitor10.txt" };
@@ -85,6 +85,11 @@ namespace DroSleep.App
         {
             Logger.Info($"Loading '{file.Name}'...");
             Monitor monitor = new Monitor(file.FullName);
+            Logger.Info("Light: [{0},...{1}] over {2:dd' days 'hh' hours and 'mm' minutes'}",
+                string.Join(",", monitor.LightIntervals.Take(3)),
+                string.Join(",", monitor.LightIntervals.Skip(monitor.LightIntervals.Count - 3)),
+                (monitor.Data.Last().TimeStamp - monitor.Data[0].TimeStamp));
+
             string outfile = file.FullName.Replace(file.Extension, "-analysis.csv");
             Logger.Info($"Output: '{outfile}'");
             using (StreamWriter w = new StreamWriter(outfile))

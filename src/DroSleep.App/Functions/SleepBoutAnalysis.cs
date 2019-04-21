@@ -41,6 +41,10 @@ namespace DroSleep.App.Functions
         {
             yield return "FromID";
             yield return "ToID";
+            if (Cfg.AnaylsisIntervalByLight)
+            {
+                yield return "Light";
+            }
             int cols = monitor.DataColumns;
             for (int col = 0; col < cols; col++)
             {
@@ -68,15 +72,10 @@ namespace DroSleep.App.Functions
         {
             int cols = monitor.DataColumns;
             TimeSpan inactivityThreshold = TimeSpan.FromMinutes(Cfg.SleepIndicatorDurationMin);
-            TimeSpan intervalLength = Cfg.AnalysisIntervalHours > 0
-                ? TimeSpan.FromHours(Cfg.AnalysisIntervalHours)
-                : TimeSpan.MaxValue;
             List<MonitorRow> data = monitor.Data
                 .Where(w => w.Id >= Cfg.FirstIdToAnalyze)
                 .ToList();
-            GenericInterval[] intervals = GenericInterval.EnumerateIntervals(data, intervalLength).ToArray();
 
-            
             // // 1. compute all cycles
             DroSleepCycle[][] cycles = new DroSleepCycle[cols][];
             for (int col = 0; col < cols; col++)
@@ -85,6 +84,12 @@ namespace DroSleep.App.Functions
             }
 
             // 2. group by interval and compute output
+            TimeSpan intervalLength = Cfg.AnalysisIntervalHours > 0
+                ? TimeSpan.FromHours(Cfg.AnalysisIntervalHours)
+                : TimeSpan.MaxValue;
+            GenericInterval[] intervals = Cfg.AnaylsisIntervalByLight
+                ? monitor.LightIntervals.ToArray()
+                : GenericInterval.EnumerateIntervals(data, intervalLength).ToArray();
             foreach (GenericInterval interval in intervals)
             {
                 yield return this.CreateRow(cycles, interval).ToArray();
@@ -95,6 +100,10 @@ namespace DroSleep.App.Functions
         {
             yield return interval.StartId.ToString();
             yield return interval.EndId.ToString();
+            if (interval is LightInterval li)
+            {
+                yield return li.ToString();
+            }
 
             Func<DroSleepCycle, double> selector = s => 
             {

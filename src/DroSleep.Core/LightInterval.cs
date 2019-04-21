@@ -12,11 +12,24 @@ namespace DroSleep.Core
         {
             this.IsLightOn = isLightOn;
         }
+
         public bool IsLightOn { get; }
+
+        public bool IsPartial => (this.EndId - this.StartId) < 710;
+
+        public bool IsExcess => (this.EndId - this.StartId) > 730;
 
         public override string ToString()
         {
-            return $"Light {(this.IsLightOn ? "ON " : "OFF")} from {this.StartId} to {this.EndId}";
+            if (this.IsPartial)
+            {
+                return $"{(this.IsLightOn ? "ON" : "OFF")}(partial)";
+            }
+            if (this.IsExcess)
+            {
+                return $"{(this.IsLightOn ? "ON" : "OFF")}(excess)";
+            }
+            return $"{(this.IsLightOn ? "ON" : "OFF")}({this.StartId}:{this.EndId})";
         }
     }
 }

@@ -14,6 +14,7 @@ namespace DroSleep.App
         public long FirstIdToAnalyze { get; } = -1;
         public int SleepIndicatorDurationMin { get; } = 10;
         public int AnalysisIntervalHours { get; } = -1;
+        public bool AnaylsisIntervalByLight { get; } = true;
 
         public bool AnalyzeTotalSleep { get; } = false;
         public bool AnalyzeSleepBoutCount { get; } = false;
@@ -53,7 +54,18 @@ namespace DroSleep.App
             this.DecimalSeparator = GetString("DecimalSeparator", content, ".");
             this.FirstIdToAnalyze = GetLong("FirstIdToAnalyze", content);
             this.SleepIndicatorDurationMin = GetInt("SleepIndicatorDurationMin", content, 5);
-            this.AnalysisIntervalHours = GetInt("AnalysisIntervalHours", content, -1);
+            
+            string analysisInterval = GetString("AnalysisIntervalHours", content, "light");
+            if (analysisInterval.Equals("light", StringComparison.OrdinalIgnoreCase))
+            {
+                this.AnalysisIntervalHours = -1;
+                this.AnaylsisIntervalByLight = true;
+            }
+            else if (int.TryParse(analysisInterval, out int intervalHours))
+            {
+                this.AnalysisIntervalHours = intervalHours;
+                this.AnaylsisIntervalByLight = false;
+            }
 
             this.AnalyzeTotalSleep = GetBool("AnalyzeTotalSleep", content);
             this.AnalyzeSleepBoutCount = GetBool("AnalyzeSleepBoutCount", content);
