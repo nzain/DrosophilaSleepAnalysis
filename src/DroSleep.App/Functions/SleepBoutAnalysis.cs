@@ -11,56 +11,48 @@ namespace DroSleep.App.Functions
 {
     public class SleepBoutAnalysis : IAnalysis
     {
-        public enum AnalysisMode
-        {
-            /// <Summary>Count the number of sleep cycles per interval.</Summary>
-            SleepBoutCount,
-
-            /// <Summary>Sum [minutes] of the sleep cycles per interval.</Summary>
-            TotalSleep,
-            
-            /// <Summary>Average sleep duration [minutes] per interval.</Summary>
-            SleepBoutDurationAvg,
-            
-            /// <Summary>Median sleep duration [minutes] per interval.</Summary>
-            SleepBoutDurationMedian,
-        }
-
         private static DroSleepConfiguration Cfg => Program.Config;
 
-        public SleepBoutAnalysis(AnalysisMode mode)
+        public SleepBoutAnalysis(AnalysisMode mode, bool? lightOn = null)
         {
             this.Mode = mode;
+            this.LightOn = lightOn;
         }
 
         public AnalysisMode Mode { get; }
 
-        public string Name => this.Mode.ToString();
+        public bool? LightOn { get; }
+
+        public string LightModeSuffix
+        {
+            get
+            {
+                if (LightOn.HasValue)
+                {
+                    return this.LightOn.Value ? "LightOn" : "LightOff";
+                }
+                return string.Empty;
+            }
+        }
+
+        public string Name => $"{this.Mode}{this.LightModeSuffix}";
 
         public IEnumerable<string> Header(Monitor monitor)
         {
             yield return "FromID";
             yield return "ToID";
-            if (Cfg.AnaylsisIntervalByLight)
-            {
-                yield return "Light";
-            }
             int cols = monitor.DataColumns;
             for (int col = 0; col < cols; col++)
             {
                 switch (this.Mode)
                 {
                     case AnalysisMode.SleepBoutCount:
-                        yield return $"Bouts-{col}";
+                        yield return $"{this.Name}-{col}";
                         break;
                     case AnalysisMode.TotalSleep:
-                        yield return $"TotalSleep[min]-{col}";
-                        break;
                     case AnalysisMode.SleepBoutDurationAvg:
-                        yield return $"SleepBoutAvg[min]-{col}";
-                        break;
                     case AnalysisMode.SleepBoutDurationMedian:
-                        yield return $"SleepBoutMedian[min]-{col}";
+                        yield return $"{this.Name}[min]-{col}";
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(this.Mode.ToString());
@@ -76,20 +68,33 @@ namespace DroSleep.App.Functions
                 .Where(w => w.Id >= Cfg.FirstIdToAnalyze)
                 .ToList();
 
-            // // 1. compute all cycles
+            Func<DroSleepCycle, bool> predicate;
+            if (this.LightOn.HasValue)
+            {
+                bool lightOnValue = this.LightOn.Value;
+                predicate = dsc => dsc.SleepStart.IsLightOn == lightOnValue;
+            }
+            else // use all
+            {
+                predicate = dsc => true;
+            }
+
+            // 1. compute all relevant cycles
             DroSleepCycle[][] cycles = new DroSleepCycle[cols][];
             for (int col = 0; col < cols; col++)
             {
-                cycles[col] = DroSleepCycle.Enumerate(data, col, inactivityThreshold).ToArray();
+                cycles[col] = DroSleepCycle.Enumerate(data, col, inactivityThreshold)
+                    .Where(predicate)
+                    .ToArray();
             }
 
             // 2. group by interval and compute output
             TimeSpan intervalLength = Cfg.AnalysisIntervalHours > 0
                 ? TimeSpan.FromHours(Cfg.AnalysisIntervalHours)
                 : TimeSpan.MaxValue;
-            GenericInterval[] intervals = Cfg.AnaylsisIntervalByLight
-                ? monitor.LightIntervals.ToArray()
-                : GenericInterval.EnumerateIntervals(data, intervalLength).ToArray();
+
+            IEnumerable<GenericInterval> intervals = GenericInterval
+                .EnumerateIntervals(data, intervalLength);
             foreach (GenericInterval interval in intervals)
             {
                 yield return this.CreateRow(cycles, interval).ToArray();

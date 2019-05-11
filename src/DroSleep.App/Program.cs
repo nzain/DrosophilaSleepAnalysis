@@ -113,21 +113,32 @@ namespace DroSleep.App
         private static IEnumerable<IAnalysis> EnumerateActiveAnalysis()
         {
             if (Config.AnalyzeTotalSleep)
-            {
-                yield return new SleepBoutAnalysis(SleepBoutAnalysis.AnalysisMode.TotalSleep);
-            }
+                yield return new SleepBoutAnalysis(AnalysisMode.TotalSleep);
+            if (Config.AnalyzeTotalSleepLightOn)
+                yield return new SleepBoutAnalysis(AnalysisMode.TotalSleep, true);
+            if (Config.AnalyzeTotalSleepLightOff)
+                yield return new SleepBoutAnalysis(AnalysisMode.TotalSleep, false);
+
             if (Config.AnalyzeSleepBoutCount)
-            {
-                yield return new SleepBoutAnalysis(SleepBoutAnalysis.AnalysisMode.SleepBoutCount);
-            }
+                yield return new SleepBoutAnalysis(AnalysisMode.SleepBoutCount);
+            if (Config.AnalyzeSleepBoutCountLightOn)
+                yield return new SleepBoutAnalysis(AnalysisMode.SleepBoutCount, true);
+            if (Config.AnalyzeSleepBoutCountLightOff)
+                yield return new SleepBoutAnalysis(AnalysisMode.SleepBoutCount, false);
+
             if (Config.AnalyzeSleepBoutDurationAvg)
-            {
-                yield return new SleepBoutAnalysis(SleepBoutAnalysis.AnalysisMode.SleepBoutDurationAvg);
-            }
+                yield return new SleepBoutAnalysis(AnalysisMode.SleepBoutDurationAvg);
+            if (Config.AnalyzeSleepBoutDurationAvgLightOn)
+                yield return new SleepBoutAnalysis(AnalysisMode.SleepBoutDurationAvg, true);
+            if (Config.AnalyzeSleepBoutDurationAvgLightOff)
+                yield return new SleepBoutAnalysis(AnalysisMode.SleepBoutDurationAvg, false);
+
             if (Config.AnalyzeSleepBoutDurationMedian)
-            {
-                yield return new SleepBoutAnalysis(SleepBoutAnalysis.AnalysisMode.SleepBoutDurationMedian);
-            }
+                yield return new SleepBoutAnalysis(AnalysisMode.SleepBoutDurationMedian);
+            if (Config.AnalyzeSleepBoutDurationMedianLightOn)
+                yield return new SleepBoutAnalysis(AnalysisMode.SleepBoutDurationMedian, true);
+            if (Config.AnalyzeSleepBoutDurationMedianLightOff)
+                yield return new SleepBoutAnalysis(AnalysisMode.SleepBoutDurationMedian, false);
         }
     }
 }

@@ -13,13 +13,23 @@ namespace DroSleep.App
         public string DecimalSeparator { get; } = ".";
         public long FirstIdToAnalyze { get; } = -1;
         public int SleepIndicatorDurationMin { get; } = 10;
-        public int AnalysisIntervalHours { get; } = -1;
-        public bool AnaylsisIntervalByLight { get; } = true;
+        public int AnalysisIntervalHours { get; } = 24;
 
         public bool AnalyzeTotalSleep { get; } = false;
+        public bool AnalyzeTotalSleepLightOn { get; } = false;
+        public bool AnalyzeTotalSleepLightOff { get; } = false;
+
         public bool AnalyzeSleepBoutCount { get; } = false;
+        public bool AnalyzeSleepBoutCountLightOn { get; } = false;
+        public bool AnalyzeSleepBoutCountLightOff { get; } = false;
+        
         public bool AnalyzeSleepBoutDurationAvg { get; } = false;
+        public bool AnalyzeSleepBoutDurationAvgLightOn { get; } = false;
+        public bool AnalyzeSleepBoutDurationAvgLightOff { get; } = false;
+
         public bool AnalyzeSleepBoutDurationMedian { get; } = false;
+        public bool AnalyzeSleepBoutDurationMedianLightOn { get; } = false;
+        public bool AnalyzeSleepBoutDurationMedianLightOff { get; } = false;
 
 
         // class and logic
@@ -54,23 +64,23 @@ namespace DroSleep.App
             this.DecimalSeparator = GetString("DecimalSeparator", content, ".");
             this.FirstIdToAnalyze = GetLong("FirstIdToAnalyze", content);
             this.SleepIndicatorDurationMin = GetInt("SleepIndicatorDurationMin", content, 5);
-            
-            string analysisInterval = GetString("AnalysisIntervalHours", content, "light");
-            if (analysisInterval.Equals("light", StringComparison.OrdinalIgnoreCase))
-            {
-                this.AnalysisIntervalHours = -1;
-                this.AnaylsisIntervalByLight = true;
-            }
-            else if (int.TryParse(analysisInterval, out int intervalHours))
-            {
-                this.AnalysisIntervalHours = intervalHours;
-                this.AnaylsisIntervalByLight = false;
-            }
+            this.AnalysisIntervalHours = GetInt("AnalysisIntervalHours", content, 24);
 
-            this.AnalyzeTotalSleep = GetBool("AnalyzeTotalSleep", content);
-            this.AnalyzeSleepBoutCount = GetBool("AnalyzeSleepBoutCount", content);
-            this.AnalyzeSleepBoutDurationAvg = GetBool("AnalyzeSleepBoutDurationAvg", content);
-            this.AnalyzeSleepBoutDurationMedian = GetBool("AnalyzeSleepBoutDurationMedian", content);
+            this.AnalyzeTotalSleep          = GetBool("AnalyzeTotalSleep", content);
+            this.AnalyzeTotalSleepLightOn   = GetBool("AnalyzeTotalSleepLightOn", content);
+            this.AnalyzeTotalSleepLightOff  = GetBool("AnalyzeTotalSleepLightOff", content);
+            
+            this.AnalyzeSleepBoutCount          = GetBool("AnalyzeSleepBoutCount", content);
+            this.AnalyzeSleepBoutCountLightOn   = GetBool("AnalyzeSleepBoutCountLightOn", content);
+            this.AnalyzeSleepBoutCountLightOff  = GetBool("AnalyzeSleepBoutCountLightOff", content);
+            
+            this.AnalyzeSleepBoutDurationAvg            = GetBool("AnalyzeSleepBoutDurationAvg", content);
+            this.AnalyzeSleepBoutDurationAvgLightOn     = GetBool("AnalyzeSleepBoutDurationAvgLightOn", content);
+            this.AnalyzeSleepBoutDurationAvgLightOff    = GetBool("AnalyzeSleepBoutDurationAvgLightOff", content);
+            
+            this.AnalyzeSleepBoutDurationMedian         = GetBool("AnalyzeSleepBoutDurationMedian", content);
+            this.AnalyzeSleepBoutDurationMedianLightOn  = GetBool("AnalyzeSleepBoutDurationMedianLightOn", content);
+            this.AnalyzeSleepBoutDurationMedianLightOff = GetBool("AnalyzeSleepBoutDurationMedianLightOff", content);
 
             // Warning about all others (not used/understood)
             foreach (var kvp in content)
