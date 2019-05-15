@@ -68,24 +68,11 @@ namespace DroSleep.App.Functions
                 .Where(w => w.Id >= Cfg.FirstIdToAnalyze)
                 .ToList();
 
-            Func<DroSleepCycle, bool> predicate;
-            if (this.LightOn.HasValue)
-            {
-                bool lightOnValue = this.LightOn.Value;
-                predicate = dsc => dsc.SleepStart.IsLightOn == lightOnValue;
-            }
-            else // use all
-            {
-                predicate = dsc => true;
-            }
-
             // 1. compute all relevant cycles
             DroSleepCycle[][] cycles = new DroSleepCycle[cols][];
             for (int col = 0; col < cols; col++)
             {
-                cycles[col] = DroSleepCycle.Enumerate(data, col, inactivityThreshold)
-                    .Where(predicate)
-                    .ToArray();
+                cycles[col] = DroSleepCycle.Enumerate(data, col, inactivityThreshold).ToArray();
             }
 
             // 2. group by interval and compute output
@@ -97,20 +84,16 @@ namespace DroSleep.App.Functions
                 .EnumerateIntervals(data, intervalLength);
             foreach (GenericInterval interval in intervals)
             {
-                yield return this.CreateRow(cycles, interval).ToArray();
+                yield return this.CreateRow(cycles, interval, monitor.LightIntervals).ToArray();
             }
         }
 
-        private IEnumerable<string> CreateRow(DroSleepCycle[][] cycles, GenericInterval interval)
+        private IEnumerable<string> CreateRow(DroSleepCycle[][] cycles, GenericInterval interval, List<LightInterval> lightIntervals)
         {
             yield return interval.StartId.ToString();
             yield return interval.EndId.ToString();
-            if (interval is LightInterval li)
-            {
-                yield return li.ToString();
-            }
-
-            Func<DroSleepCycle, double> selector = s => 
+            
+            Func<DroSleepCycle, double> sleepSelector = s => 
             {
                 // Charlotte: don't count partial intervals, if cross-border sleep less than threshold
                 double partialSleep = s.SleepDurationPartial(interval).TotalMinutes;
@@ -118,12 +101,25 @@ namespace DroSleep.App.Functions
                     ? partialSleep 
                     : 0;
             };
+            
+            Func<DroSleepCycle, bool> lightOnFilter;
+            if (this.LightOn.HasValue)
+            {
+                bool lightOnValue = this.LightOn.Value;
+                lightOnFilter = cycle => cycle.SleepStart.IsLightOn == lightOnValue;
+            }
+            else // use all
+            {
+                lightOnFilter = cycle => true;
+            }
+
 
             for (int col = 0; col < cycles.Length; col++)
             {
                 DroSleepCycle[] items = cycles[col]
                     .Where(w => interval.IntersectsSleep(w))
-                    .Where(w => selector(w) > 0)
+                    .Where(w => sleepSelector(w) > 0)
+                    .Where(lightOnFilter)
                     .ToArray();
                 switch (this.Mode)
                 {
@@ -131,16 +127,16 @@ namespace DroSleep.App.Functions
                         yield return items.Length.ToString();
                         break;
                     case AnalysisMode.TotalSleep:
-                        yield return items.Sum(selector).ToString();
+                        yield return items.Sum(sleepSelector).ToString();
                         break;
                     case AnalysisMode.SleepBoutDurationAvg:
                         yield return items.Length > 0 
-                            ? items.Average(selector).ToString("F2")
+                            ? items.Average(sleepSelector).ToString("F2")
                             : "N/A";
                         break;
                     case AnalysisMode.SleepBoutDurationMedian:
                         yield return items.Length > 0 
-                            ? items.Median(selector).ToString() 
+                            ? items.Median(sleepSelector).ToString() 
                             : "N/A";
                         break;
                     default:
