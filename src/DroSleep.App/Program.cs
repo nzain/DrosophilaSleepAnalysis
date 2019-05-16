@@ -94,6 +94,10 @@ namespace DroSleep.App
             Logger.Info($"Output: '{outfile}'");
             using (StreamWriter w = new StreamWriter(outfile))
             {
+                // 1. write the used configuration as a header to the output
+                Config.WriteToOutput(w);
+                w.WriteLine();
+
                 foreach (IAnalysis analysis in EnumerateActiveAnalysis())
                 {
                     Logger.Info($"Computing {analysis.Name}...");

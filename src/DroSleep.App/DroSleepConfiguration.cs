@@ -90,6 +90,15 @@ namespace DroSleep.App
             Logger.Debug(new string('-', 60));
         }
 
+        internal void WriteToOutput(StreamWriter w)
+        {
+            w.WriteLine($"ColumnSeparator{this.ColumnSeparator}\"{this.ColumnSeparator}\"");
+            w.WriteLine($"DecimalSeparator{this.ColumnSeparator}\"{this.DecimalSeparator}\"");
+            w.WriteLine($"FirstIdToAnalyze{this.ColumnSeparator}{this.FirstIdToAnalyze}");
+            w.WriteLine($"SleepIndicatorDurationMin{this.ColumnSeparator}{this.SleepIndicatorDurationMin}");
+            w.WriteLine($"AnalysisIntervalHours{this.ColumnSeparator}{this.AnalysisIntervalHours}");
+        }
+
         private static void ReadLine(string line, Dictionary<string,string> content)
         {
             if (string.IsNullOrWhiteSpace(line))
