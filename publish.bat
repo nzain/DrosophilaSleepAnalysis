@@ -11,20 +11,26 @@ ECHO publish to: %deployDir%
 
 IF EXIST "%deployDir%" rmdir /s /q "%deployDir%"
 
-dotnet publish -c Release -r win-x64 -o "%deployWin64%" "%prj%"
-dotnet publish -c Release -r linux-x64 -o "%deployLinux64%" "%prj%"
+dotnet publish -c Release --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true /p:IncludeNativeLibrariesForSelfExtract=true^
+ -r win-x64^
+ -o "%deployWin64%" "%prj%"
+ 
+dotnet publish -c Release --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true^
+ -r linux-x64^
+ -o "%deployLinux64%" "%prj%"
+
 xcopy /d /s "%ini%" "%deployDir%"
 
-.\windows-x64.warp-packer.exe^
-	--arch windows-x64^
-	--input_dir "%deployWin64%"^
-	--exec DroSleep.exe^
-	--output "%deployDir%\DroSleep.exe"
-	
-.\windows-x64.warp-packer.exe^
-	--arch linux-x64^
-	--input_dir "%deployLinux64%"^
-	--exec DroSleep^
-	--output "%deployDir%\DroSleep_linux"
+REM .\windows-x64.warp-packer.exe^
+REM 	--arch windows-x64^
+REM 	--input_dir "%deployWin64%"^
+REM 	--exec DroSleep.exe^
+REM 	--output "%deployDir%\DroSleep.exe"
+REM 	
+REM .\windows-x64.warp-packer.exe^
+REM 	--arch linux-x64^
+REM 	--input_dir "%deployLinux64%"^
+REM 	--exec DroSleep^
+REM 	--output "%deployDir%\DroSleep_linux"
 
 PAUSE

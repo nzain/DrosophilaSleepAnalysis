@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AssemblyName>DroSleep</AssemblyName>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="nlog" Version="4.5.9" />
+    <PackageReference Include="nlog" Version="4.7.10" />
   </ItemGroup>
 </Project>
